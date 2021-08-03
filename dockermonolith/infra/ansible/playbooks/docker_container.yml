@@ -1,0 +1,11 @@
+---
+
+- hosts: dockerhosts
+  become: yes
+  tasks:
+    - name: Start reddit app container
+      community.docker.docker_container:
+        name: reddit
+        image: ostin654/otus-reddit:1.0
+        published_ports:
+          - '9292:9292'

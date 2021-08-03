@@ -1,0 +1,9 @@
+REPOSITORY                 TAG              IMAGE ID       CREATED              SIZE
+ostin654/ubuntu-tmp-file   latest           c76c98a5dc04   About a minute ago   63.1MB
+ubuntu                     18.04            39a8cfeef173   7 days ago           63.1MB
+
+Образ имеет такие характеристики как ContainerConfig, RootFS, а у контейнер их нет,
+но есть State, HostConfig, Mounts, NetworkSettings.
+
+То есть, у контейнера есть понятия о ресурсах (CPU, память и пр.), о сетевых устройствах,
+о его состоянии. А образ имеет информацию о том из чего и как запускать контейнер.

@@ -1,0 +1,12 @@
+---
+
+- hosts: all
+  become: yes
+  roles:
+    - geerlingguy.docker
+  tasks:
+    - name: Install python lib
+      apt:
+        update_cache: yes
+        name:
+          - python3-docker

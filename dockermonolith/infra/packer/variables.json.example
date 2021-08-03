@@ -1,0 +1,11 @@
+{
+  "key_file": "packer/packer_key.json.example",
+  "folder_id": "yourfolderid12345678",
+  "zone": "ru-central1-a",
+  "subnet_id": "yoursubnetid12345678",
+  "source_image": "ubuntu-1604-lts",
+  "ssh_username": "ubuntu",
+  "platform_id": "standard-v1",
+  "instance_cores": "2",
+  "instance_mem_gb": "2"
+}
