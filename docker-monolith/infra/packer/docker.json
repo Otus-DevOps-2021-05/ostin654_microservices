@@ -1,0 +1,29 @@
+{
+  "builders":
+  [
+    {
+      "type": "yandex",
+      "service_account_key_file": "{{user `key_file`}}",
+      "folder_id": "{{user `folder_id`}}",
+      "zone": "{{user `zone`}}",
+      "subnet_id": "{{user `subnet_id`}}",
+      "use_ipv4_nat": true,
+
+      "source_image_family": "{{user `source_image`}}",
+      "image_name": "docker-host-{{timestamp}}",
+      "image_family": "docker-host",
+      "ssh_username": "{{user `ssh_username`}}",
+      "platform_id": "{{user `platform_id`}}",
+
+      "instance_cores": "{{user `instance_cores`}}",
+      "instance_mem_gb": "{{user `instance_mem_gb`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "ansible",
+      "playbook_file": "ansible/playbooks/packer_docker.yml",
+      "ansible_env_vars": ["ANSIBLE_ROLES_PATH=ansible/roles"]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+/.idea/
+packer/packer_key.json
+variables.json
+*.tfstate
+*.tfstate.*.backup
+*.tfstate.backup
+*.tfvars
+.terraform/
+/terraform/terraform_key.json
+*.retry
+geerlingguy.docker
+vault.key
+# Vagrant & molecule
+.vagrant/
+*.log
+*.pyc
+.molecule
+.cache
+.pytest_cache
