@@ -1,5 +1,25 @@
 # Домашнее задание к уроку №16
 
+## Docker machine
+
+```shell
+yc compute instance create \
+--name docker-host \
+--zone ru-central1-a \
+--network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+--create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2004-lts,size=15 \
+--ssh-key ~/.ssh/id_rsa.pub
+```
+
+```shell
+docker-machine create \
+--driver generic \
+--generic-ip-address=PUBLIC_IP \
+--generic-ssh-user yc-user \
+--generic-ssh-key ~/.ssh/id_rsa \
+docker-host
+```
+
 Подготовлен Dockerfile для сборки docker-образа приложения.
 
 ## Сборка docker-образа приложения
@@ -89,4 +109,33 @@ docker run -d --network=reddit --network-alias=post_db1 --network-alias=comment_
 docker run -d --network=reddit --network-alias=post1 -e POST_DATABASE_HOST='post_db1' ostin654/post:1.0
 docker run -d --network=reddit --network-alias=comment1 -e COMMENT_DATABASE_HOST='comment_db1' ostin654/comment:2.0-alpine
 docker run -d --network=reddit -e POST_SERVICE_HOST='post1' -e COMMENT_SERVICE_HOST='comment1' -p 9292:9292 ostin654/ui:2.0-alpine
+```
+
+# Домашнее задание к уроку №18
+
+Перейти в каталог `src`.
+
+В каталог `src` необходимо добавить файл `.env`. Содержимое можно взять из примера `.env.example`.
+
+Переменная `COMPOSE_PROJECT_NAME` задает уникальное имя проекта, которое используется при именовании контейнеров.
+Если ее не указывать, то за имя проекта берется имя текущей директории.
+
+## Запуск сервисов
+
+```shell
+docker-compose up
+```
+
+### Запуск в фоне
+
+```shell
+docker-compose up -d
+```
+
+## Запуск в режиме отладки
+
+Позволяет менять код приложения без сборки образов и запускает puma в режиме debug в 2 потока.
+
+```shell
+docker-compose -f docker-compose.override.yml up
 ```
