@@ -139,3 +139,51 @@ docker-compose up -d
 ```shell
 docker-compose -f docker-compose.override.yml up
 ```
+
+# Домашнее задание к уроку №20
+
+## Ручное создание VM с Docker для Gitlab
+
+Создание VM в yandex cloud
+
+```shell
+yc compute instance create --name gitlab-ci \
+--zone ru-central1-a --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+--create-boot-disk image-folder-id=standard-images,image-family=ubuntu-1804-lts,size=60 \
+--memory=8 --cores=2 --core-fraction=100 --ssh-key ~/.ssh/id_rsa.pub
+```
+
+Установка docker с помощью docker-machine
+
+```shell
+docker-machine create \
+--driver generic \
+--generic-ip-address=PUBLIC_IP \
+--generic-ssh-user yc-user \
+--generic-ssh-key ~/.ssh/id_rsa \
+gitlab-ci
+```
+
+## Создание VM с помощью terraform и ansible
+
+В файле `dockermonolith/infra/terraform/gitlab.tfvars` указать необходимые значения.
+
+В директории `dockermonolith/infra/terraform` выполнить:
+
+```shell
+terraform apply
+```
+
+### Запуск контейнера c self-managed gitlab
+
+В директории `dockermonolith/infra/ansible` выполнить:
+
+```shell
+ansible-playbook playbooks/docker_gitlab.yml
+```
+
+Если зайти на сервер по ssh, то можно наблюдать за развертыванием контейнера:
+
+```shell
+docker logs gitlab -f
+```
