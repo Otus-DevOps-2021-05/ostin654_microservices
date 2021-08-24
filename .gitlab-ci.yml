@@ -22,6 +22,8 @@ build_job:
 build_container:
   stage: build
   image: 'docker:latest'
+  before_script:
+    - cd reddit
   script:
     - docker build -t redditapp:$CI_COMMIT_REF_NAME
   environment:
