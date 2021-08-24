@@ -31,8 +31,6 @@ build_container:
     - branches
   except:
     - master
-  tags:
-    - docker_build
 
 test_unit_job:
   stage: test
