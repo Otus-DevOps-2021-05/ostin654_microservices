@@ -25,7 +25,7 @@ build_container:
   before_script:
     - cd reddit
   script:
-    - docker build -t redditapp:$CI_COMMIT_REF_NAME
+    - docker build . -t redditapp:$CI_COMMIT_REF_NAME
   environment:
     name: branch/$CI_COMMIT_REF_NAME
     url: http://$CI_ENVIRONMENT_SLUG.example.com
