@@ -19,6 +19,18 @@ build_job:
   script:
     - echo 'Building'
 
+build_container:
+  stage: build
+  script:
+    - docker build -t redditapp:$CI_COMMIT_REF_NAME
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    url: http://$CI_ENVIRONMENT_SLUG.example.com
+  only:
+    - branches
+  except:
+    - master
+
 test_unit_job:
   stage: test
   services:
