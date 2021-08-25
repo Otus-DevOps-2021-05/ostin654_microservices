@@ -187,3 +187,89 @@ ansible-playbook playbooks/docker_gitlab.yml
 ```shell
 docker logs gitlab -f
 ```
+
+## Установка пароля для root
+
+После запуска и настройки контейнера gitlab необходимо поменять пароль root.
+Для этого заходим в контейнер с gitlab и запускаем консоль ruby.
+
+```shell
+docker exec -it gitlab bash
+gitlab-rails console -e production
+```
+
+После загрузки консоли можно поменять пароль следующими командами:
+
+```
+user = User.where(id: 1).first
+user.password = 'secret_pass'
+user.password_confirmation = 'secret_pass'
+user.save!
+```
+
+## Создание проекта
+
+Сначала нужно создать группу: `Menu -> Groups -> Create group`
+Далее создается проект: `Menu -> Projects -> Create new project`
+
+### Добавление remote в репозиторий
+
+Посмотреть ссылку для клонирования репозитория можно, нажав в правом меню на `Repository` и далее `Clone`.
+Добавим новый remote к нашему репозиторию и запушим изменения в gitlab:
+
+```shell
+git checkout -b gitlab-ci-1
+git remote add gitlab <YOUR_GITLAB_REPO_URL>
+git push gitlab gitlab-ci-1
+```
+
+Посмотреть список существующих remote:
+
+```shell
+git remote -v
+```
+
+## Запуск и регистрация gitlab-runner
+
+### Запуск контейнера с gitlab-runner
+
+Запуск контейнера с gitlab-runner уже предусмотрен в playbook `dockermonolith/infra/ansible/playbooks/docker_gitlab.yml`.
+
+Чтобы вручную запустить контейнер с gitlab-runner:
+
+```shell
+docker run -d --name gitlab-runner --restart always \
+-v /srv/gitlab- runner/config:/etc/gitlab-runner \
+-v /var/run/docker.sock:/var/run/docker.sock \
+gitlab/gitlab-runner:latest
+```
+
+### Регистрация gitlab-runner
+
+```shell
+docker exec -it gitlab-runner gitlab-runner register \
+--url http://<your-ip>/ \
+--registration-token <your-token> \
+--non-interactive \
+--locked=false \
+--name DockerRunner \
+--executor docker \
+--docker-image alpine:latest \
+--docker-volumes "/var/run/docker.sock:/var/run/docker.sock" \
+--tag-list "linux,xenial,ubuntu,docker" \
+--run-untagged
+```
+
+`your-ip` и `your-token` можно посмотреть в админке gitlab в `Settings -> CI/CD -> Runners`.
+
+`--docker-volumes` необходимо, чтобы в дальнейшем можно runner мог собирать docker-образы.
+
+## Сборка образа на стадии build
+
+Для стадии `build` определена задача `build_container`.
+Для корректной работы выбран образ `docker:latest` (чтобы была доступна команда `docker build`) и изменена настройка `before_script`.
+
+## Настройка оповещений в slack
+
+Настройка произведена в `Settings -> Integrations -> Slack notifications`.
+Настроены оповещения в канал #aleksey_kostin (https://devops-team-otus.slack.com/archives/C0254LBG291)
