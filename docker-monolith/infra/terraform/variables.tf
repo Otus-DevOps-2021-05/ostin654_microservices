@@ -20,8 +20,14 @@ variable "yc_subnet_id" {
   type = string
 }
 
-variable "docker_disk_image" {
+variable "disk_image" {
   type = string
+}
+
+variable "disk_size" {
+  description = "Disk size in GB"
+  type = number
+  default = 15
 }
 
 variable "yc_bucket_name" {

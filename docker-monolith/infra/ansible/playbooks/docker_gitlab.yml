@@ -1,0 +1,38 @@
+---
+
+- hosts: dockerhosts
+  become: yes
+  tasks:
+    - name: Make directories for data
+      file:
+        path: "{{item}}"
+        state: directory
+      with_items:
+        - '/srv/gitlab/config'
+        - '/srv/gitlab/data'
+        - '/srv/gitlab/logs'
+    - name: Start gitlab-ci docker container
+      community.docker.docker_container:
+        name: gitlab
+        image: gitlab/gitlab-ce:latest
+        env:
+          GITLAB_OMNIBUS_CONFIG: "external_url 'http://{{ansible_host}}'"
+        published_ports:
+          - '80:80'
+          - '443:443'
+          - '2222:22'
+        volumes:
+          - '/srv/gitlab/config:/etc/gitlab'
+          - '/srv/gitlab/logs:/var/log/gitlab'
+          - '/srv/gitlab/data:/var/opt/gitlab'
+        state: started
+        restart_policy: always
+    - name: Start gitlab-runner docker container
+      community.docker.docker_container:
+        name: gitlab-runner
+        image: gitlab/gitlab-runner:latest
+        volumes:
+          - '/srv/gitlab-runner/config:/etc/gitlab-runner'
+          - '/var/run/docker.sock:/var/run/docker.sock'
+        state: started
+        restart_policy: always
