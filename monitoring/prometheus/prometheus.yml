@@ -28,3 +28,21 @@ scrape_configs:
     static_configs:
       - targets:
           - 'mongo-exporter:9104'
+
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: ['tcp_connect', 'icmp']
+    static_configs:
+      - targets:
+          - 'post_db:27017'
+          - 'post:5000'
+          - 'comment:9292'
+          - 'ui:9292'
+    relabel_configs:
+      - source_labels: [ __address__ ]
+        target_label: __param_target
+      - source_labels: [ __param_target ]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

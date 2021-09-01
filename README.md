@@ -323,3 +323,34 @@ docker-compose down
 ```
 
 ## Проверка мониторинга
+
+При переходе на страницу http://your-docker-host:9090/ откроется админка Prometheus. На вкладке Targets присутствует список endpoint'ов.
+State должны быть в состоянии `UP`.
+На главной странице можно искать метрики по имени или выбрать из списка.
+Для мониторинга mongodb выбран `elarasu/mongodb_exporter`.
+Для мониторинга mongodb выбран `prom/blackbox-exporter`.
+Необходимые настройки сделаны в `prometheus.yml` и в `docker-compose.yml`.
+
+## Упрощение сборки с помощью Makefile
+
+Доступные задачи:
+
+- build_prometheus
+- build_post
+- build_comment
+- build_ui
+- build_all
+- push_prometheus
+- push_post
+- push_comment
+- push_ui
+- push_all
+
+## Созданные образы
+
+В работе созданы следующие образы:
+
+- ostin654/prometheus
+- ostin654/post
+- ostin654/comment
+- ostin654/ui

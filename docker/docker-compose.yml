@@ -32,23 +32,6 @@ services:
       - front_net
     depends_on:
       - post_db
-  prometheus:
-    image: ${USERNAME}/prometheus
-    ports:
-      - '9090:9090'
-    volumes:
-      - prometheus_data:/prometheus
-    networks:
-      - back_net
-      - front_net
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention=1d'
-    depends_on:
-      - ui
-      - post
-      - comment
   node-exporter:
     image: prom/node-exporter:v0.15.2
     user: root
@@ -71,6 +54,37 @@ services:
       MONGODB_URL: 'mongodb://post_db:27017'
     depends_on:
       - post_db
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.19.0
+    user: root
+    networks:
+      - back_net
+      - front_net
+    depends_on:
+      - post_db
+      - comment
+      - post
+      - ui
+  prometheus:
+    image: ${USERNAME}/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+    networks:
+      - back_net
+      - front_net
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=1d'
+    depends_on:
+      - ui
+      - post
+      - comment
+      - node-exporter
+      - mongo-exporter
+      - blackbox-exporter
 
 volumes:
   post_db:
