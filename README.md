@@ -168,7 +168,7 @@ gitlab-ci
 
 В файле `dockermonolith/infra/terraform/gitlab.tfvars` указать необходимые значения.
 
-В директории `dockermonolith/infra/terraform` выполнить:
+В директории `docker-monolith/infra/terraform` выполнить:
 
 ```shell
 terraform apply
@@ -273,3 +273,84 @@ docker exec -it gitlab-runner gitlab-runner register \
 
 Настройка произведена в `Settings -> Integrations -> Slack notifications`.
 Настроены оповещения в канал #aleksey_kostin (https://devops-team-otus.slack.com/archives/C0254LBG291)
+
+# Домашнее задание к уроку №22
+
+## Сборка необходимых образов
+
+```shell
+export USER_NAME=yourname
+```
+
+В каталоге `monitoring/prometheus`:
+
+```shell
+docker build -t $USER_NAME/prometheus .
+```
+
+В каталоге `src/comment`:
+
+```shell
+bash docker_build.sh
+```
+
+В каталоге `src/post`:
+
+```shell
+bash docker_build.sh
+```
+
+В каталоге `src/ui`:
+
+```shell
+bash docker_build.sh
+```
+
+В файле `docker/.env` проверить теги сервисов `post`, `comment`, `ui` - должны быть `latest`.
+
+## Запуск контейнеров
+
+В каталоге `docker`:
+
+```shell
+docker-compose -f docker-compose.yml up -d
+```
+
+## Остановка контейнеров
+
+```shell
+docker-compose down
+```
+
+## Проверка мониторинга
+
+При переходе на страницу http://your-docker-host:9090/ откроется админка Prometheus. На вкладке Targets присутствует список endpoint'ов.
+State должны быть в состоянии `UP`.
+На главной странице можно искать метрики по имени или выбрать из списка.
+Для мониторинга mongodb выбран `elarasu/mongodb_exporter`.
+Для мониторинга mongodb выбран `prom/blackbox-exporter`.
+Необходимые настройки сделаны в `prometheus.yml` и в `docker-compose.yml`.
+
+## Упрощение сборки с помощью Makefile
+
+Доступные задачи:
+
+- build_prometheus
+- build_post
+- build_comment
+- build_ui
+- build_all
+- push_prometheus
+- push_post
+- push_comment
+- push_ui
+- push_all
+
+## Созданные образы
+
+В работе созданы следующие образы:
+
+- ostin654/prometheus
+- ostin654/post
+- ostin654/comment
+- ostin654/ui
