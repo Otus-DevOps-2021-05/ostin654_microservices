@@ -18,6 +18,13 @@ services:
     depends_on:
       - post
       - comment
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
   post:
     image: ${USERNAME}/post:${POST_VERSION}
     networks:
@@ -25,11 +32,20 @@ services:
       - front_net
     depends_on:
       - post_db
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
   comment:
     image: ${USERNAME}/comment:${COMMENT_VERSION}
     networks:
       - back_net
       - front_net
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     depends_on:
       - post_db
   node-exporter:
