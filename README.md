@@ -354,3 +354,68 @@ State должны быть в состоянии `UP`.
 - ostin654/post
 - ostin654/comment
 - ostin654/ui
+
+# Домашнее задание к уроку №25
+
+## Сборка образов с поддержкой логирования
+
+Обновить код приложения из ветки https://github.com/express42/reddit/tree/logging
+
+Не забыть добавить тег `:logging` в скрипты сборки `docker_build.sh`.
+
+В каталоге `src/comment`:
+
+```shell
+bash docker_build.sh
+```
+
+В каталоге `src/post`:
+
+```shell
+bash docker_build.sh
+```
+
+В каталоге `src/ui`:
+
+```shell
+bash docker_build.sh
+```
+
+Запушить образы в hub:
+
+```shell
+docker push $USER_NAME/ui:logging
+docker push $USER_NAME/post:logging
+docker push $USER_NAME/comment:logging
+```
+
+## Сборка образа fluentd
+
+```shell
+cd logging/fluentd
+docker build -t $USER_NAME/fluentd .
+```
+
+## Запуск приложения
+
+```shell
+docker-compose -f docker-compose.yml up -d
+```
+
+## Запуск сборщика логов
+
+```shell
+docker-compose -f docker-compose-logging.yml up -d
+```
+
+## Просмотр логов и трейсинга
+
+Kibana работает на порту 5601
+Zipkin работает на порту 9411
+
+## Траблшутинг UI-экспириенса
+
+Контейнеры с баганным кодом собраны с тегом `bugged`.
+
+Просмотр трейсов в zipkin показывает, что большую часть времени занимает ответ сервиса post.
+Детальное изучение кода post показывает, что для имитации долгой работы в код был добавлена строка `time.sleep(3)`.
