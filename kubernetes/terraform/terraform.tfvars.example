@@ -1,0 +1,8 @@
+yc_zone                  = "ru-central1-a"
+yc_cloud_id              = "abcdefghij1234567890"
+yc_folder_id             = "abcdefghij1234567890"
+disk_image               = "abcdefghij1234567890"
+yc_subnet_id             = "abcdefghij1234567890"
+yc_bucket_name           = "my-bucket-name"
+service_account_key_file = "~/.terraform_key.json"
+is_nat                   = true

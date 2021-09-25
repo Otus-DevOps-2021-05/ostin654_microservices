@@ -419,3 +419,124 @@ Zipkin работает на порту 9411
 
 Просмотр трейсов в zipkin показывает, что большую часть времени занимает ответ сервиса post.
 Детальное изучение кода post показывает, что для имитации долгой работы в код был добавлена строка `time.sleep(3)`.
+
+
+# Домашнее задание к уроку №27
+
+## Создание кластера kubernetes
+
+Потребуется 2 VM в yandex.cloud. В качестве ОС выбрана Ubuntu 20. На каждой выполнить:
+
+```shell
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update
+
+sudo apt-get install docker-ce=5:19.03.15~3-0~ubuntu-focal docker-ce-cli=5:19.03.15~3-0~ubuntu-focal containerd.io kubelet=1.19.14-00 kubeadm=1.19.15-00 kubectl=1.19.15-00
+```
+
+На мастер-ноде выполнить команду создания кластера:
+
+```shell
+kubeadm init --apiserver-cert-extra-sans=<PUBLIC_IP> --apiserver-advertise-address=0.0.0.0 --control-plane-endpoint=<PUBLIC_IP> --pod-network-cidr=10.244.0.0/16
+```
+
+В результате выполнения мы получаем команду для добавления новых нод в кластер:
+
+```shell
+kubeadm join <MASTER_IP>:6443 --token <SOME_TOKEN> --discovery-token-ca-cert-hash <SOME_HASH>
+```
+
+Чтобы запускать `kubectl` без sudo, необходимо скопировать в домашнюю директорию конфиг:
+
+```shell
+mkdir ~/.kube/
+sudo cp /etc/kubernetes/admin.conf ~/.kube/config
+sudo chown $USER ~/.kube/config
+```
+
+Также можно установить локально `kubectl` (например, отсюда https://www.downloadkubernetes.com) и скопировать конфиг с сервера в локальную домашнюю директорию.
+
+## Установка кластера k8s с помощью terraform и ansible
+
+В каталоге `kubernetes/terraform` расположены манифесты `terraform`.
+В каталоге `kubernetes/ansible` расположены плейбуки `ansible`.
+
+Для инициализации backend необходимо указать реквизиты при запуске `terraform init`.
+Необходимый бакет должен быть создан.
+
+```shell
+terraform init -backend-config="access_key=YOUR_ACCESS_KEY" -backend-config="secret_key=YOUR_SECRET_KEY"
+```
+
+Поднимаем инфраструктуру:
+
+```shell
+terraform apply
+```
+
+В качестве ролей ansible выбраны:
+- `geerlingguy.docker`
+- `geerlingguy.kubernetes`
+
+Полезные ссылки:
+- Настройка параметров роли kubernetes https://github.com/geerlingguy/ansible-role-kubernetes/blob/master/defaults/main.yml
+- Пример конфиг-файла с параметрами для kubeadm https://gist.github.com/nilesh93/c743205d34fedb5f48ae4d37d959ba4b
+
+Установим зависимости:
+
+```shell
+ansible-galaxy install -r requirements.yml
+```
+
+Настраиваем мастер-ноду:
+
+```shell
+ansible-playbook playbooks/kubernetes.yml --limit kubernetes-0 -vv
+```
+
+На мастер-ноде можно получить команду для добавления нод в кластер:
+
+```shell
+kubeadm token create --print-join-command
+```
+
+Добавляем вторую ноду в кластер, при этом передаем команду добавления через `--extra-vars`:
+
+```shell
+ansible-playbook playbooks/kubernetes.yml --limit kubernetes-1 -vv --extra-vars '{"kubernetes_join_command":"<DROP_COMMAND_HERE>"}'
+```
+
+Устанавливаем локально `kubectl` (например, отсюда https://www.downloadkubernetes.com).
+Далее копируем конфиг `kubectl` в домашнюю директорию с мастер-ноды `/etc/kubernetes/admin.conf` в `~/.kube/config`.
+
+Пробуем посмотреть информацию о нодах:
+
+```
+% kubectl get nodes
+NAME                   STATUS   ROLES    AGE     VERSION
+fhmo5fnnl4v8m7iscu5r   Ready    <none>   2m52s   v1.19.15
+fhmpgpivauls11v159c8   Ready    master   19m     v1.19.15
+```
+
+Если есть проблема с сертификатом, и надо добавить IP в разрешенные, можно воспользоваться инструкцией: https://blog.scottlowe.org/2019/07/30/adding-a-name-to-kubernetes-api-server-certificate/
+
+## Запуск подов
+
+```shell
+cd kubernetes
+kubectl apply -f reddit/post-deployment.yml
+```
+
+```
+% kubectl get pods
+NAME                               READY   STATUS    RESTARTS   AGE
+post-deployment-554b9bccf6-q76h4   1/1     Running   0          84s
+```
