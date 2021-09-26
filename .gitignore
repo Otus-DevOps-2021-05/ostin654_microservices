@@ -9,6 +9,7 @@ variables.json
 /terraform/terraform_key.json
 *.retry
 geerlingguy.docker
+geerlingguy.kubernetes
 vault.key
 # Vagrant & molecule
 .vagrant/
