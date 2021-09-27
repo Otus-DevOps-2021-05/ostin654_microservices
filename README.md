@@ -540,3 +540,51 @@ kubectl apply -f reddit/post-deployment.yml
 NAME                               READY   STATUS    RESTARTS   AGE
 post-deployment-554b9bccf6-q76h4   1/1     Running   0          84s
 ```
+
+# Домашнее задание к уроку №28
+
+- Установка kubectl https://kubernetes.io/docs/tasks/tools/install-kubectl/
+- Установка minikube https://kubernetes.io/docs/tasks/tools/install-minikube/
+
+### Запуск кластера
+
+```shell
+minikube start --kubernetes-version 1.19.7
+```
+
+### Остановка кластера
+
+```shell
+minikube stop
+```
+
+### Проверка работы, просмотр нод
+
+```shell
+kubectl get nodes
+```
+
+### Переключение контекста вручную
+
+```shell
+kubectl config use-context context_name
+```
+
+### Запуск приложения
+
+```shell
+kubectl apply -f kubernetes/reddit/dev-namespace.yml
+kubectl apply -f kubernetes/reddit -n dev
+```
+
+### Открытие приложения в браузере
+
+```shell
+minikube service ui -n dev
+```
+
+Откроется браузер со страницей приложения.
+
+## Работа приложения в Yandex.cloud
+
+Приложение развернуто в кластере kubernetes в Яндекс.Облаке и доступно по ссылке http://62.84.119.119:32017/
