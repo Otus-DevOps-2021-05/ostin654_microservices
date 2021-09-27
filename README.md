@@ -587,4 +587,10 @@ minikube service ui -n dev
 
 ## Работа приложения в Yandex.cloud
 
+Получение конфига кластера:
+
+```shell
+yc managed-kubernetes cluster get-credentials <cluster-name> --external
+```
+
 Приложение развернуто в кластере kubernetes в Яндекс.Облаке и доступно по ссылке http://62.84.119.119:32017/
