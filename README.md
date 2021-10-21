@@ -594,3 +594,96 @@ yc managed-kubernetes cluster get-credentials <cluster-name> --external
 ```
 
 Приложение развернуто в кластере kubernetes в Яндекс.Облаке и доступно по ссылке http://62.84.119.119:32017/
+
+# Домашнее задание к уроку №29
+
+Посмотреть сервисы:
+
+```shell
+kubectl get services -n dev
+```
+
+```
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+comment      ClusterIP   10.96.241.68    <none>        9292/TCP         8h
+comment-db   ClusterIP   10.96.182.49    <none>        27017/TCP        8h
+mongodb      ClusterIP   10.96.214.127   <none>        27017/TCP        8h
+post         ClusterIP   10.96.212.135   <none>        5000/TCP         8h
+post-db      ClusterIP   10.96.235.55    <none>        27017/TCP        8h
+ui           NodePort    10.96.250.121   <none>        9292:31421/TCP   8h
+```
+
+Отключение coredns и проверка доступности сервисов:
+
+```shell
+kubectl scale deployment --replicas 0 -n kube-system kube-dns-autoscaler
+kubectl scale deployment --replicas 0 -n kube-system coredns
+kubectl exec -ti -n dev ui-684f844f58-5z72s ping comment
+```
+
+```
+ping: bad address 'comment'
+command terminated with exit code 1
+```
+
+Для отката изменений:
+
+```shell
+kubectl scale deployment --replicas 1 -n kube-system kube-dns-autoscaler
+```
+
+Установка Ingress nginx controller:
+
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.34.1/deploy/static/provider/cloud/deploy.yaml
+```
+
+Применение правил ingress:
+
+```shell
+kubectl apply -f ui-ingress.yml -n dev
+```
+
+Просмотр созданного ingress:
+
+```shell
+kubectl get ingress -n dev
+```
+
+```
+NAME   CLASS    HOSTS   ADDRESS         PORTS     AGE
+ui     <none>   *       193.32.219.84   80, 443   14h
+```
+
+Генерация сертификатов:
+
+```shell
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=193.32.219.84"
+```
+
+Добавление сертификатов в кластер:
+
+```shell
+kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev
+```
+
+Для работы сетевых политик в Я.облаке необходимо при создании кластера отметить чекбокс "Включить сетевые политики".
+Примерение сетевых политик:
+
+```shell
+kubectl apply -f mongo-network-policy.yml -n dev
+```
+
+Создание диска в Я.облаке:
+
+```shell
+yc compute disk create --name k8s --size 4 --description "disk for k8s"
+```
+
+Применение правил для volume:
+
+```shell
+kubectl apply -f volume.yml -n dev
+kubectl apply -f volume-claim.yml -n dev
+kubectl apply -f mongodb-deployment.yml -n dev
+```
